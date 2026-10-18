@@ -46,6 +46,8 @@
 #include "value_stepping.h"
 #include "presets.h"
 #include "ui_presets_screen.h"
+static void drawFocusMacroScreen();
+#include "ui_focus_macro.h"
 #include "ui_focus_screen.h"
 #include "touch_router.h"
 
@@ -122,6 +124,11 @@ void loop() {
     updateDirtyDisplay();
     updateRemoteBattery();
     advancePresetLoad();
+    updateFocusMacro();
+    if (focusMacroDirty) {
+        focusMacroDirty = false;
+        if (screen == SCREEN_FOCUS_MACRO) drawFocusMacroScreen();
+    }
     if (passkeyReplyPending && pinSubmitted) replyWithEnteredPin();
     if (pinRequested && !pinScreenDrawn) drawPinScreen();
     handleTouchInput();

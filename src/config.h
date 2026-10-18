@@ -53,7 +53,7 @@ static const uint16_t UI_SEL = 0xFD20;      // border of the selected value cell
 enum CameraValue : uint8_t { VALUE_ISO, VALUE_SHUTTER, VALUE_FPS, VALUE_WB, VALUE_TINT, VALUE_IRIS };
 
 // Which page is on screen.
-enum Screen : uint8_t { SCREEN_MAIN, SCREEN_PRESETS, SCREEN_FOCUS };
+enum Screen : uint8_t { SCREEN_MAIN, SCREEN_PRESETS, SCREEN_FOCUS, SCREEN_FOCUS_MACRO, SCREEN_FOCUS_MACRO_SETTINGS };
 
 // Recording format as reported by the camera (category 1, parameter 9).
 struct RecordingFormat {

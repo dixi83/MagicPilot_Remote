@@ -75,6 +75,18 @@ static uint8_t pinDigits = 0;                                        // digits e
 static char pinEntry[6] = {};                                        // the six PIN digits as characters, not null terminated
 static char statusMessage[44] = "Camera not found (pairing mode?)";  // footer text
 
+// Focus pull macro settings and runtime state (time values are milliseconds).
+static uint16_t macroFocusStart = 0;
+static uint16_t macroFocusEnd = FOCUS_MAX;
+static uint32_t macroFocusDurationMs = 5000;
+static uint8_t focusMacroPhase = 0;  // 0 idle, 1 settle start, 2 pre-record wait, 3 pull, 4 post-pull wait
+static bool focusMacroPaused = false;
+static bool focusMacroRecording = false;
+static uint32_t focusMacroPhaseStartedMs = 0;
+static uint32_t focusMacroPausedAtMs = 0;
+static uint32_t focusMacroLastUpdateMs = 0;
+static bool focusMacroDirty = false;
+
 // Values the - / + buttons step through. ISO and FPS are the rates the camera accepts.
 static const int32_t ISO_STEPS[] = {100, 160, 200, 250, 320, 400, 500, 640, 800, 1000, 1250, 1600, 2000, 2500, 3200, 4000, 5000, 6400, 8000, 10000, 12800, 16000, 20000, 25600};
 // Shutter angles in camera units (degrees * 100), so 11.2 degrees is 1120.

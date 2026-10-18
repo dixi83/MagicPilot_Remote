@@ -13,7 +13,8 @@ enum FocusKey : uint8_t { FOCUS_KEY_MINUS, FOCUS_KEY_AF, FOCUS_KEY_PLUS };
 static const Rect FOCUS_SLIDER = {20, 64, 280, 30};       // drawn track
 static const Rect FOCUS_SLIDER_PAD = {14, 56, 292, 46};   // slack around the track that still counts as a drag
 static const Rect FOCUS_KEYS[3] = {{8, 114, 96, 50}, {112, 114, 96, 50}, {216, 114, 96, 50}};  // in FocusKey order
-static const Rect FOCUS_BACK = {6, 170, 154, 32};
+static const Rect FOCUS_BACK = {6, 170, 98, 32};
+static const Rect FOCUS_MACRO = {112, 170, 202, 32};
 static const uint32_t FOCUS_REPEAT_MS = 100;              // repeat interval while a focus key or the slider is held
 
 // Redraws only the percentage and slider, so dragging doesn't flicker.
@@ -53,6 +54,7 @@ static void drawFocusScreen() {
     M5.Lcd.drawString("AF", af.x + af.w / 2, af.y + af.h / 2, 4);
 
     drawOutlineButton(FOCUS_BACK, "BACK", 4);
+    drawOutlineButton(FOCUS_MACRO, "FOCUS PULL", 4);
     drawStatus();
 }
 
@@ -66,6 +68,11 @@ static bool focusTouchRepeats(int x, int y) {
 static void handleFocusTouch(int x, int y) {
     if (inside(x, y, FOCUS_BACK)) {
         openScreen(SCREEN_MAIN);
+        return;
+    }
+    if (inside(x, y, FOCUS_MACRO)) {
+        screen = SCREEN_FOCUS_MACRO;
+        drawFocusMacroScreen();
         return;
     }
     const bool onSlider = inside(x, y, FOCUS_SLIDER_PAD);

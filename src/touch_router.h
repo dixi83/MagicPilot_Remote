@@ -11,6 +11,7 @@
 #include "value_stepping.h"
 #include "ui_presets_screen.h"
 #include "ui_focus_screen.h"
+#include "ui_focus_macro.h"
 
 // Switches the timecode row between timecode and the clip counter.
 static void toggleTimecodeSource() {
@@ -38,6 +39,8 @@ static void handleTouch(int x, int y) {
         handleFocusTouch(x, y);
         return;
     }
+    if (screen == SCREEN_FOCUS_MACRO) { handleFocusMacroTouch(x, y); return; }
+    if (screen == SCREEN_FOCUS_MACRO_SETTINGS) { handleFocusMacroSettingsTouch(x, y); return; }
     if (y < 28) {
         if (cameraConnected && abs(x - modeCenterX()) <= 35) toggleTimecodeSource();
         else {
