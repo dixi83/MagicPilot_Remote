@@ -33,6 +33,7 @@ static char drawnFocusTimecode[20] = {};
 static uint16_t drawnFocusTimecodeColor = BLACK;
 
 static void drawRotatedFocusLabel(const char* label, int centerX, int centerY) {
+    // Draw labels in a small reusable sprite so rotating them doesn't repaint the page.
     if (!focusLabelCanvasReady) {
         focusLabelCanvas.setColorDepth(8);
         if (!focusLabelCanvas.createSprite(40, 18)) return;
@@ -58,6 +59,7 @@ static void drawFocusTimecodeBadge() {
 }
 
 static void drawFocusTimecode() {
+    // Match the main screen's timer style and redraw only characters that changed.
     char text[20];
     timecodeText(text, sizeof(text));
     const uint16_t color = transportMode == 2 ? RED : WHITE;

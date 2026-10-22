@@ -16,7 +16,7 @@
  *    record state and card slots.
  *  - Changes ISO, shutter angle, FPS, white balance, tint and iris with the - / + buttons.
  *  - Starts and stops recording, and switches between timecode and clip counter.
- *  - Focus page with a slider, fine steps and one-shot autofocus.
+ *  - Focus pages for manual control, a timed focus pull macro and three saved focus positions.
  *  - Presets page with two presets that are saved to, loaded from and cleared on the SD card.
  *  - Optional UI screenshots to the SD card (see CAPTURE_SCREENSHOTS).
  *
@@ -31,7 +31,10 @@
  *  - value_stepping.h  - / + button handling for the value grid
  *  - presets.h         preset storage on the SD card
  *  - ui_presets_screen.h the preset page
- *  - ui_focus_screen.h the focus page
+ *  - ui_focus_screen.h the manual focus page
+ *  - ui_focus_macro.h  focus pull editor and playback state machine
+ *  - ui_focus_presets.h focus preset selection and editing
+ *  - focus_macro_storage.h and focus_presets_storage.h SD persistence for focus settings
  *  - touch_router.h    touch routing and dirty-flag redraws
  */
 
@@ -80,6 +83,7 @@ void setup() {
     Serial.begin(115200);
     initializeAmbientBrightness();
     sdReady = mountSd();
+    // Load saved focus settings after mounting the card; defaults remain in effect if no file exists.
     loadFocusMacroSettings();
     loadFocusPresets();
     Serial.printf("[SD] %s, card type %d, %llu MB\n", sdReady ? "mounted" : "not mounted", (int)SD.cardType(), SD.cardSize() / (1024ULL * 1024ULL));
@@ -104,7 +108,7 @@ static void replyWithEnteredPin() {
     if (result != ESP_OK) setStatus("Passkey reply failed");
 }
 
-// Dispatches the current touch, repeating it while a stepper or the focus slider is held.
+// Dispatches the current touch; stepper keys and focus controls repeat while held.
 static void handleTouchInput() {
     // The INT pin can go low before the controller is read; that stale point is (-1,-1) and must not consume the tap.
     const auto& point = M5.Touch.getDetail();
@@ -124,7 +128,7 @@ static void handleTouchInput() {
     touchWasDown = touchDown;
 }
 
-// Applies dirty-flag redraws, answers the pairing PIN, handles touch, and saves queued screenshots.
+// Runs responsive BLE/UI updates, advances timed actions, handles touch, and flushes queued screenshots.
 void loop() {
     M5.update();
     updateAmbientBrightness();

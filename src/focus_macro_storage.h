@@ -7,6 +7,7 @@
 
 static const char* FOCUS_MACRO_SETTINGS_PATH = "/focus_pull.cfg";
 
+// Store focus units and duration milliseconds as CSV; remove first because FILE_WRITE appends.
 static void saveFocusMacroSettings() {
     if (!sdReady) return;
     SD.remove(FOCUS_MACRO_SETTINGS_PATH);
@@ -27,6 +28,7 @@ static void loadFocusMacroSettings() {
     file.close();
     unsigned start = 0, end = 0;
     unsigned long duration = 0;
+    // Ignore incomplete or out-of-range files and keep the compiled defaults in that case.
     if (sscanf(line, "%u,%u,%lu", &start, &end, &duration) == 3 &&
         start <= FOCUS_MAX && end <= FOCUS_MAX && duration >= 1000 && duration <= 600000) {
         macroFocusStart = (uint16_t)start;

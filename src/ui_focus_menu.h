@@ -1,6 +1,6 @@
 #pragma once
 
-// Focus navigation and placeholder for the future focus preset feature.
+// Focus navigation to manual focus, focus pull, and saved focus presets.
 
 #include "config.h"
 #include "globals.h"
@@ -13,6 +13,7 @@ static const Rect FOCUS_MENU_PULL =     {8,  76, 304, 40};
 static const Rect FOCUS_MENU_PRESETS =  {8, 119, 304, 40};
 static const Rect FOCUS_MENU_BACK =     {6, 167, 118, 34};
 
+// Each item opens its own page; BACK returns to the main camera controls.
 static void drawFocusMenuScreen() {
     drawSubHeader("FOCUS MENU");
     drawOutlineButton(FOCUS_MENU_MANUAL, "MANUAL FOCUS", 5);

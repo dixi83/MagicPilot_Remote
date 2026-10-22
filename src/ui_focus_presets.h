@@ -9,7 +9,7 @@
 #include "ui_presets_screen.h"
 #include "focus_presets_storage.h"
 
-// Keep the three choices within the left content area; the right column remains available for future controls.
+// Keep the three choices in the left content area; the right column holds the shared record pad.
 static const Rect FOCUS_PRESET_BUTTONS[FOCUS_PRESET_COUNT] = {
     {6, 56, 76, 68}, {87, 56, 76, 68}, {168, 56, 76, 68}
 };
@@ -46,6 +46,7 @@ static void drawFocusPresetsScreen() {
 }
 
 static bool focusPresetTouchRepeats(int x, int y) {
+    // Holding either stepper button repeats the change to the selected preset.
     return inside(x, y, FOCUS_PRESET_MINUS) || inside(x, y, FOCUS_PRESET_PLUS);
 }
 
@@ -64,6 +65,7 @@ static void handleFocusPresetsTouch(int x, int y) {
         selectedFocusPreset = i;
         if (previous != i) drawFocusPresetButton(previous);
         drawFocusPresetButton(i);
+        // Selecting a preset immediately applies it to the camera when connected.
         if (cameraConnected) {
             if (!sendFocus(focusPresetValues[i])) setStatus("Focus preset update failed");
         } else {
@@ -73,6 +75,7 @@ static void handleFocusPresetsTouch(int x, int y) {
     }
     if (!inside(x, y, FOCUS_PRESET_MINUS) && !inside(x, y, FOCUS_PRESET_PLUS)) return;
 
+    // Edit in one-percent steps, then persist the values and send the new focus to the camera.
     const int direction = inside(x, y, FOCUS_PRESET_PLUS) ? 1 : -1;
     const int currentPercent = (focusPresetValues[selectedFocusPreset] * 100UL + FOCUS_MAX / 2) / FOCUS_MAX;
     const int nextPercent = constrain(currentPercent + direction, 0, 100);

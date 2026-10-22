@@ -1,6 +1,6 @@
 #pragma once
 
-// Focus pull macro pages and non-blocking playback state machine.
+// Focus pull editor and non-blocking macro playback state machine.
 
 #include "config.h"
 #include "globals.h"
@@ -8,7 +8,7 @@
 #include "ui_main_screen.h"
 static void openScreen(uint8_t next);  // defined by the platform-specific application entry point
 
-//{x, y, w, h}
+// Screen layout: editable values and +/- controls are on the left; transport controls use the right column.
 static const Rect MACRO_START_BUTTON = {255, 79, 63, 63};
 static const Rect MACRO_STOP_BUTTON = {255, 148, 63, 54};
 // Expand hit targets into the unused right-column space around the visible controls.
@@ -24,12 +24,13 @@ static const Rect MACRO_BACK = {6, 167, 118, 34};
 static void drawFocusScreen();
 
 static uint8_t focusPercent(uint16_t value) { return (uint8_t)((value * 100UL + FOCUS_MAX / 2) / FOCUS_MAX); }
-static uint8_t macroEditField = 0; // selected start, end, or pull time box
+static uint8_t macroEditField = 0; // selected start focus, end focus, or pull duration field
 static void drawMacroButton(const Rect& r, const char* label, bool enabled, bool filled = false);
 static void drawMacroField(uint8_t field);
 static int8_t renderedMacroControls = -1;
 static int16_t renderedMacroProgress = -1;
 
+// The pad shows play while idle, pause while running, and play again while paused.
 static void drawMacroRecordButton() {
     const int centerX = MACRO_START_BUTTON.x + MACRO_START_BUTTON.w / 2;
     const int centerY = MACRO_START_BUTTON.y + MACRO_START_BUTTON.h / 2;
@@ -46,6 +47,7 @@ static void drawMacroRecordButton() {
 }
 
 static void drawFocusMacroDynamic() {
+    // Phase 3 is the timed pull; phase 4 is the two-second settle before recording stops.
     uint32_t progress = 0;
     if (focusMacroPhase == 3) {
         const uint32_t elapsedMs = millis() - focusMacroPhaseStartedMs;
@@ -65,6 +67,7 @@ static void drawFocusMacroDynamic() {
     }
     renderedMacroProgress = nextWidth;
 
+    // Cache the control mode so animation ticks redraw controls only when state changes.
     const int8_t controls = focusMacroPhase == 0 ? 0 : focusMacroPaused ? 2 : 1;
     if (controls != renderedMacroControls) {
         M5.Lcd.fillRect(MACRO_STOP_BUTTON.x, MACRO_STOP_BUTTON.y, MACRO_STOP_BUTTON.w, MACRO_STOP_BUTTON.h, BLACK);
@@ -87,6 +90,7 @@ static void drawMacroButton(const Rect& r, const char* label, bool enabled, bool
 
     char text[64];
     snprintf(text, sizeof(text), "%s", label);
+    // <BR> separates lines without relying on the display font's newline handling.
     char* lines[4] = {text, nullptr, nullptr, nullptr};
     uint8_t lineCount = 1;
     char* breakAt = text;
@@ -112,6 +116,7 @@ static void drawFocusMacroScreen() {
     drawStepperPair(MACRO_MINUS, MACRO_PLUS, 24, 5);
     drawMacroButton(MACRO_REVERSE_BUTTON, "REVERSE", focusMacroPhase == 0);
     drawMacroButton(MACRO_BACK, "BACK", focusMacroPhase == 0);
+    // Invalidate partial-draw caches after painting the whole page.
     renderedMacroControls = -1;
     renderedMacroProgress = -1;
     drawFocusMacroDynamic();
@@ -136,6 +141,7 @@ static void drawMacroField(uint8_t field) {
 }
 
 static void stopFocusMacro(bool stopRecording) {
+    // Used for both a user stop and the normal end of the macro sequence.
     if (stopRecording && focusMacroRecording && cameraConnected) sendPacket(TRANSPORT_PACKET, 0, 1);
     focusMacroRecording = false;
     focusMacroPaused = false;
@@ -144,6 +150,7 @@ static void stopFocusMacro(bool stopRecording) {
 }
 
 static bool startFocusMacro() {
+    // Check camera and recording state before changing focus or starting a recording.
     if (!cameraConnected) { setStatus("Connect camera to run macro"); return false; }
     if (transportMode == 2) { setStatus("Stop recording before macro"); return false; }
     if (!sendFocus(macroFocusStart)) { setStatus("Could not set start focus"); return false; }
@@ -158,6 +165,7 @@ static bool startFocusMacro() {
 }
 
 static void updateFocusMacro() {
+    // Called from the main loop so waits and focus moves never block touch or BLE handling.
     if (focusMacroPhase == 0 || focusMacroPaused) return;
     if (!cameraConnected) { stopFocusMacro(false); setStatus("Macro stopped: camera disconnected"); return; }
     const uint32_t now = millis();
@@ -165,9 +173,11 @@ static void updateFocusMacro() {
     focusMacroLastUpdateMs = now;
     const uint32_t elapsed = now - focusMacroPhaseStartedMs;
     if (focusMacroPhase == 2 && elapsed >= 2000) {
+        // Hold the start focus for two seconds after recording begins.
         focusMacroPhase = 3; focusMacroPhaseStartedMs = now;
         sendFocus(macroFocusStart); focusMacroDirty = true;
     } else if (focusMacroPhase == 3) {
+        // Interpolate focus from start to end over the configured duration.
         const uint32_t done = min(elapsed, macroFocusDurationMs);
         const int32_t delta = (int32_t)macroFocusEnd - macroFocusStart;
         sendFocus((int32_t)macroFocusStart + delta * (int32_t)done / (int32_t)macroFocusDurationMs);
@@ -199,6 +209,7 @@ static void handleFocusMacroTouch(int x, int y) {
         saveFocusMacroSettings();
         drawMacroField(macroEditField);
     } else if (focusMacroPhase == 0 && (inside(x, y, MACRO_MINUS) || inside(x, y, MACRO_PLUS))) {
+        // Focus values step by one percent; pull duration steps by one second.
         const int direction = inside(x, y, MACRO_PLUS) ? 1 : -1;
         if (macroEditField == 0) {
             macroFocusStart = (uint16_t)((constrain((int)focusPercent(macroFocusStart) + direction, 0, 100) * FOCUS_MAX + 50) / 100);

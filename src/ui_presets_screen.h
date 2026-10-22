@@ -74,7 +74,7 @@ static void drawFocusMenuScreen();
 static void drawFocusPresetsScreen();
 static void drawFocusMacroScreen();
 
-// Switches page and draws it; the main screen is always redrawn in full.
+// Central page entry point: each page can reset its state and draw its own controls.
 static void openScreen(uint8_t next) {
     screen = next;
     if (next == SCREEN_PRESETS) {

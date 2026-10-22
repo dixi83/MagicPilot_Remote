@@ -150,13 +150,23 @@ Iris changes can only reach lenses the camera can drive.
 
 ### Focus
 
-Tap **FOCUS** on the main screen to open the focus page.
+Tap **MENU** on the main screen, then choose **MANUAL FOCUS**.
 
 - **Slider**: drag from NEAR to FAR to set focus directly. The current position shows as a percentage.
 - **- / +**: steps of exactly 1%, repeating while held. They work once the camera has reported its focus position; until then, move the slider once.
 - **AF**: triggers the camera's one-shot autofocus.
 
 Focus changes only reach lenses the camera can drive.
+
+### Focus pull
+
+From **MENU**, choose **FOCUS PULL**. Select the **START**, **END** or **PULL TIME** box, then adjust it with the - / + buttons. Focus values change in 1% steps and pull time changes in one-second steps. **TAKE CURRENT FOCUS** copies the camera's current focus into the selected start or end value. **REVERSE** swaps the start and end positions.
+
+Tap the record pad to start the macro. It sets the start focus, starts camera recording, holds for two seconds, moves focus over the configured pull time, holds the end focus for two seconds, then stops recording. While it runs, the pad pauses or resumes the macro; **STOP** ends it early. The progress bar shows the timed focus move.
+
+### Focus positions
+
+From **MENU**, choose **FOCUS PRESETS**. Tap one of the three numbered positions to select and immediately apply it to the camera. Use - / + to change the selected position in 1% steps. The page also has the shared record control.
 
 ### Presets
 
@@ -174,8 +184,10 @@ Presets live on the SD card, so they survive power-off.
 | Path | Content |
 | --- | --- |
 | `/presets/<date>_MagicPilot_Remote_Preset1.json`, `..._Preset2.json` | One JSON file per saved preset, for example `2026-10-05_MagicPilot_Remote_Preset1.json` |
+| `/focus_pull.cfg` | Start focus, end focus and pull duration in milliseconds |
+| `/focus_presets.cfg` | The three saved focus positions |
 
-Without a card the remote still works, but saving and loading presets shows "No SD card".
+Without a card the remote still works, but camera presets and focus settings are not saved across power-off.
 
 ## FAQ
 
@@ -197,8 +209,12 @@ Yes. It is open-source firmware licensed under the [LGPL-3.0](LICENSE).
 
 ## Project layout
 
-- `src/main.cpp`: the whole firmware (BLE client, camera protocol, UI).
-- `platformio.ini`: board, framework and library settings.
+- `src/main.cpp`: firmware setup and main loop.
+- `src/ble_connection.h`, `src/ble_protocol.h`: BLE connection and camera control protocol.
+- `src/ui_*.h`: screen drawing and touch handling.
+- `src/focus_macro_storage.h`, `src/focus_presets_storage.h`: focus settings stored on SD.
+- `src/presets.h`: camera preset storage and recall.
+- `platformio.ini`: PlatformIO board, framework and library settings.
 
 ## Disclaimer
 

@@ -78,7 +78,7 @@ static void updateDirtyDisplay() {
         if (screen == SCREEN_FOCUS) drawFocusDynamic();  // focus value changed while that page is open
     }
     if (screen != SCREEN_MAIN) {
-        // The preset and focus pages draw everything else themselves; only the shared footer lands here.
+        // These pages update their own controls. Shared record, timecode and status changes land here.
         if (transportDirty && (screen == SCREEN_FOCUS_PRESETS || screen == SCREEN_FOCUS)) {
             drawRecordButton();
             if (screen == SCREEN_FOCUS) drawFocusTimecode();

@@ -34,7 +34,7 @@ static bool inside(int x, int y, const Rect& area) {
 
 // Main screen geometry. Drawing and hit testing read the same rectangles so they cannot drift apart.
 // The *_PAD areas are the generous touch targets around the smaller shapes that are actually drawn.
-// {x, y, breedte, hoogte}
+// {x, y, w, h}
 static const Rect RECORD_PAD = {253, 56, 67, 108};        // the record circle and the column under it
 static const Rect VALUE_GRID = {6, 56, 239, 72};          // both rows of value cells
 static const Rect STEP_PAD = {126, 130, 123, 71};         // spans both stepper buttons and the gap between them
@@ -181,7 +181,7 @@ static void drawTimecodeBadge() {
     M5.Lcd.drawString("TC", TIMECODE_BADGE.x + TIMECODE_BADGE.w / 2, TIMECODE_BADGE.y + TIMECODE_BADGE.h / 2 + 1, 1);
 }
 
-// Redraws only the character cells whose glyph changed, so the digits don't flicker.
+// Redraw changed glyph cells only; clearing and repainting the whole timer causes visible flicker.
 static void drawTimecode() {
     char text[20];
     timecodeText(text, sizeof(text));
@@ -343,6 +343,7 @@ static bool drawnValueSelected[6] = {};
 static bool valueCellsDrawn = false;
 
 static void drawValues() {
+    // Keep a copy of what is on screen so unchanged value cells are left untouched.
     char text[12];
     for (uint8_t cell = 0; cell < 6; ++cell) {
         valueText(cell, text, sizeof(text));
@@ -432,7 +433,7 @@ static void drawControls() {
                      2, cameraConnected || connecting ? 2 : 1);
 }
 
-// Red dot when idle, white stop square while recording.
+// Shared record control: red dot when idle, white stop square while recording.
 static void drawRecordButton() {
     const int centerX = RECORD_BUTTON.x + RECORD_BUTTON.w / 2;
     const int centerY = RECORD_BUTTON.y + RECORD_BUTTON.h / 2;
