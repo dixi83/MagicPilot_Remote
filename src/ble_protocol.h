@@ -104,7 +104,7 @@ static void markDisconnected() {
     recordingFormat.fileFps = 0;
     haveTimecode = false;
     valuesDirty = timecodeDirty = transportDirty = true;
-    statusDirty = focusDirty = connectionDirty = true;
+    statusDirty = voltageDirty = slotsDirty = focusDirty = connectionDirty = true;
 }
 
 // True if both nibbles are decimal digits and the value is below limit.
@@ -261,11 +261,11 @@ static void applyTransport(const uint8_t* data, size_t valueLength) {
     transportDirty = true;
 }
 
-static void applyVoltage(const uint8_t* data, size_t) { cameraVoltage = readInt16(data); statusDirty = true; }
+static void applyVoltage(const uint8_t* data, size_t) { cameraVoltage = readInt16(data); voltageDirty = true; }
 
 static void applySlotRemaining(const uint8_t* data, size_t valueLength) {
     for (uint8_t i = 0; i < 3 && (size_t)(i + 1) * 2 <= valueLength; ++i) slotRemaining[i] = readInt16(data + i * 2);
-    statusDirty = true;
+    slotsDirty = true;
 }
 
 static void applyTimecodeSource(const uint8_t* data, size_t) {

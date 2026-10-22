@@ -36,6 +36,8 @@ static volatile bool valuesDirty = false;     // the value grid
 static volatile bool timecodeDirty = false;   // the timecode row and its TC badge
 static volatile bool transportDirty = false;  // record state, which also repaints the header and slots
 static volatile bool statusDirty = false;     // the footer message
+static volatile bool voltageDirty = false;    // camera battery pill in the expanded header
+static volatile bool slotsDirty = false;      // media slot row in the expanded footer
 static volatile bool focusDirty = false;      // the focus page slider and percentage
 static volatile bool connectionDirty = true;  // forces a full redraw; set on connect and disconnect
 

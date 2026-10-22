@@ -338,13 +338,22 @@ static void drawTopBar() {
 }
 
 // Grid of two rows: ISO, shutter, FPS above white balance, tint, iris.
+static char drawnValueText[6][12] = {};
+static bool drawnValueSelected[6] = {};
+static bool valueCellsDrawn = false;
+
 static void drawValues() {
     char text[12];
     for (uint8_t cell = 0; cell < 6; ++cell) {
         valueText(cell, text, sizeof(text));
+        const bool selected = selectedValue == cell;
+        if (valueCellsDrawn && strcmp(text, drawnValueText[cell]) == 0 && selected == drawnValueSelected[cell]) continue;
         drawCell(VALUE_CELLS[cell].x, VALUE_CELLS[cell].y, 78, 34, VALUE_CELLS[cell].title, text,
-                 selectedValue == cell, cell == VALUE_SHUTTER);
+                 selected, cell == VALUE_SHUTTER);
+        snprintf(drawnValueText[cell], sizeof(drawnValueText[cell]), "%s", text);
+        drawnValueSelected[cell] = selected;
     }
+    valueCellsDrawn = true;
 }
 
 // 12x16 card symbol: SD is a filled body with a cut corner, CFast an outline with contacts.
@@ -450,6 +459,7 @@ static void drawStatus() {
 static void drawScreen() {
     M5.Lcd.fillScreen(BLACK);
     drawnTimecodeColor = BLACK;
+    valueCellsDrawn = false;
     drawTopBar();
     drawTimecode();
     drawValues();

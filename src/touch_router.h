@@ -106,7 +106,15 @@ static void updateDirtyDisplay() {
         drawTopBar(); drawSlots(); drawRecordButton(); drawTimecode();
         requestScreenshot();
     }
-    if (statusDirty) { statusDirty = false; drawTopBar(); drawStatus(); }  // voltage, slots, or a new status message
+    if (statusDirty) { statusDirty = false; drawStatus(); }
+    if (voltageDirty) {
+        voltageDirty = false;
+        if (headerExpanded) drawVoltage();
+    }
+    if (slotsDirty) {
+        slotsDirty = false;
+        if (footerExpanded) drawSlots();
+    }
     if (connectionDirty) {
         // Connected or disconnected; redraw everything rather than track what changed.
         connectionDirty = false;
