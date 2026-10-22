@@ -70,6 +70,9 @@ static void drawPresetScreen() {
 }
 
 static void drawFocusScreen();  // defined in ui_focus_screen.h, so openScreen can reach it
+static void drawFocusMenuScreen();
+static void drawFocusPresetsScreen();
+static void drawFocusMacroScreen();
 
 // Switches page and draws it; the main screen is always redrawn in full.
 static void openScreen(uint8_t next) {
@@ -84,6 +87,9 @@ static void openScreen(uint8_t next) {
         drawFocusScreen();
         return;
     }
+    if (next == SCREEN_FOCUS_MENU) { drawFocusMenuScreen(); return; }
+    if (next == SCREEN_FOCUS_PRESETS) { drawFocusPresetsScreen(); return; }
+    if (next == SCREEN_FOCUS_MACRO) { drawFocusMacroScreen(); return; }
     drawScreen();
     requestScreenshot();
 }

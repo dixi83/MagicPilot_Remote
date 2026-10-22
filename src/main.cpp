@@ -45,10 +45,13 @@
 #include "screenshot.h"
 #include "value_stepping.h"
 #include "presets.h"
+#include "focus_presets_storage.h"
 #include "ui_presets_screen.h"
+#include "focus_macro_storage.h"
 static void drawFocusMacroScreen();
 #include "ui_focus_macro.h"
 #include "ui_focus_screen.h"
+#include "ui_focus_menu.h"
 #include "touch_router.h"
 
 // ============================================================================
@@ -77,6 +80,8 @@ void setup() {
     Serial.begin(115200);
     initializeAmbientBrightness();
     sdReady = mountSd();
+    loadFocusMacroSettings();
+    loadFocusPresets();
     Serial.printf("[SD] %s, card type %d, %llu MB\n", sdReady ? "mounted" : "not mounted", (int)SD.cardType(), SD.cardSize() / (1024ULL * 1024ULL));
     if (sdReady && CAPTURE_SCREENSHOTS) seekFirstFreeCaptureIndex();
 
@@ -109,7 +114,9 @@ static void handleTouchInput() {
         if (!touchWasDown) Serial.printf("[TOUCH] down x=%d y=%d\n", point.x, point.y);
         const bool repeatStep = !pinRequested && screen == SCREEN_MAIN && inside(point.x, point.y, STEP_PAD);
         const bool repeatFocus = !pinRequested && screen == SCREEN_FOCUS && focusTouchRepeats(point.x, point.y);
-        if (!touchWasDown || (repeatStep && now - lastStepMs >= 220) || (repeatFocus && now - lastStepMs >= FOCUS_REPEAT_MS)) {
+        const bool repeatFocusPreset = !pinRequested && screen == SCREEN_FOCUS_PRESETS && focusPresetTouchRepeats(point.x, point.y);
+        if (!touchWasDown || (repeatStep && now - lastStepMs >= 220) || (repeatFocus && now - lastStepMs >= FOCUS_REPEAT_MS) ||
+            (repeatFocusPreset && now - lastStepMs >= 220)) {
             handleTouch(point.x, point.y);
             lastStepMs = now;
         }
@@ -127,7 +134,7 @@ void loop() {
     updateFocusMacro();
     if (focusMacroDirty) {
         focusMacroDirty = false;
-        if (screen == SCREEN_FOCUS_MACRO) drawFocusMacroScreen();
+        if (screen == SCREEN_FOCUS_MACRO) drawFocusMacroDynamic();
     }
     if (passkeyReplyPending && pinSubmitted) replyWithEnteredPin();
     if (pinRequested && !pinScreenDrawn) drawPinScreen();

@@ -11,6 +11,7 @@
 #include "value_stepping.h"
 #include "ui_presets_screen.h"
 #include "ui_focus_screen.h"
+#include "ui_focus_menu.h"
 #include "ui_focus_macro.h"
 
 // Switches the timecode row between timecode and the clip counter.
@@ -26,6 +27,8 @@ static void handleTouch(int x, int y) {
         handlePinTouch(x, y);
         return;
     }
+    if (screen == SCREEN_FOCUS_MENU) { handleFocusMenuTouch(x, y); return; }
+    if (screen == SCREEN_FOCUS_PRESETS) { handleFocusPresetsTouch(x, y); return; }
     if (y >= 205) {
         footerExpanded = !footerExpanded;
         drawStatus();
@@ -40,7 +43,6 @@ static void handleTouch(int x, int y) {
         return;
     }
     if (screen == SCREEN_FOCUS_MACRO) { handleFocusMacroTouch(x, y); return; }
-    if (screen == SCREEN_FOCUS_MACRO_SETTINGS) { handleFocusMacroSettingsTouch(x, y); return; }
     if (y < 28) {
         if (cameraConnected && abs(x - modeCenterX()) <= 35) toggleTimecodeSource();
         else {
@@ -63,7 +65,7 @@ static void handleTouch(int x, int y) {
     } else if (inside(x, y, PRESET_BUTTON)) {
         openScreen(SCREEN_PRESETS);
     } else if (inside(x, y, FOCUS_BUTTON)) {
-        openScreen(SCREEN_FOCUS);
+        openScreen(SCREEN_FOCUS_MENU);
     } else if (y >= 28 && y <= 55 && cameraConnected) {
         toggleTimecodeSource();
     }
@@ -77,6 +79,17 @@ static void updateDirtyDisplay() {
     }
     if (screen != SCREEN_MAIN) {
         // The preset and focus pages draw everything else themselves; only the shared footer lands here.
+        if (transportDirty && (screen == SCREEN_FOCUS_PRESETS || screen == SCREEN_FOCUS)) {
+            drawRecordButton();
+            if (screen == SCREEN_FOCUS) drawFocusTimecode();
+            else drawTimecode();
+            transportDirty = false;
+        }
+        if (timecodeDirty && (screen == SCREEN_FOCUS || screen == SCREEN_FOCUS_PRESETS)) {
+            timecodeDirty = false;
+            if (screen == SCREEN_FOCUS) drawFocusTimecode();
+            else drawTimecode();
+        }
         if (statusDirty) { statusDirty = false; drawStatus(); }
         return;
     }

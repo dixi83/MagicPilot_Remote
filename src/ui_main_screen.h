@@ -34,14 +34,16 @@ static bool inside(int x, int y, const Rect& area) {
 
 // Main screen geometry. Drawing and hit testing read the same rectangles so they cannot drift apart.
 // The *_PAD areas are the generous touch targets around the smaller shapes that are actually drawn.
+// {x, y, breedte, hoogte}
 static const Rect RECORD_PAD = {253, 56, 67, 108};        // the record circle and the column under it
 static const Rect VALUE_GRID = {6, 56, 239, 72};          // both rows of value cells
 static const Rect STEP_PAD = {126, 130, 123, 71};         // spans both stepper buttons and the gap between them
 static const Rect STEP_MINUS = {131, 130, 54, 71};        // drawn outline of the - button
 static const Rect STEP_PLUS = {190, 130, 54, 71};         // drawn outline of the + button
 static const Rect CONNECT_PAD = {249, 164, 71, 38};
-static const Rect CONNECT_BUTTON = {249, 167, 70, 34};    // drawn outline, inset from CONNECT_PAD
-static const Rect FOCUS_BUTTON = {6, 130, 118, 34};       // opens the focus page
+static const Rect CONNECT_BUTTON = {255, 167, 63, 34};    // drawn outline, inset from CONNECT_PAD
+static const Rect RECORD_BUTTON = {255, 84, 63, 63};      // record icon, shifted 5 px down from its hit area
+static const Rect FOCUS_BUTTON = {6, 130, 118, 34};       // opens the focus menu
 static const Rect PRESET_BUTTON = {6, 167, 118, 34};      // opens the preset page
 static const int STEP_SPLIT_X = 188;                     // left of this steps down, right of it steps up
 static const int VALUE_COLUMN_SPLIT_X[2] = {84, 164};    // right edge of the first and second value column
@@ -423,12 +425,14 @@ static void drawControls() {
 
 // Red dot when idle, white stop square while recording.
 static void drawRecordButton() {
-    M5.Lcd.fillRect(255, 79, 63, 63, BLACK);
-    M5.Lcd.drawCircle(286, 110, 30, WHITE);
-    M5.Lcd.drawCircle(286, 110, 29, WHITE);
-    M5.Lcd.fillCircle(286, 110, 15, RED);
+    const int centerX = RECORD_BUTTON.x + RECORD_BUTTON.w / 2;
+    const int centerY = RECORD_BUTTON.y + RECORD_BUTTON.h / 2;
+    M5.Lcd.fillRect(RECORD_BUTTON.x, RECORD_BUTTON.y, RECORD_BUTTON.w, RECORD_BUTTON.h, BLACK);
+    M5.Lcd.drawCircle(centerX, centerY, 30, WHITE);
+    M5.Lcd.drawCircle(centerX, centerY, 29, WHITE);
+    M5.Lcd.fillCircle(centerX, centerY, 15, RED);
     // 17 px wide so it has a centre pixel, like the circles.
-    if (transportMode == 2) M5.Lcd.fillRoundRect(278, 102, 17, 17, 2, WHITE);
+    if (transportMode == 2) M5.Lcd.fillRoundRect(centerX - 8, centerY - 8, 17, 17, 2, WHITE);
 }
 
 // Footer: the status message, with the card slot row below it once expanded.
@@ -451,7 +455,7 @@ static void drawScreen() {
     drawValues();
     drawControls();
     drawRecordButton();
-    drawOutlineButton(FOCUS_BUTTON, "FOCUS", 0);
+    drawOutlineButton(FOCUS_BUTTON, "FOCUS MENU", 0);
     drawOutlineButton(PRESET_BUTTON, "PRESETS", 0);
     drawStatus();
 }
