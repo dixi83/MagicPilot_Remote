@@ -36,6 +36,8 @@ https://github.com/user-attachments/assets/88d4dcbc-c6db-4bb7-9184-9daaf6ef9eb5
   - [Pairing](#pairing)
   - [Live readout and control](#live-readout-and-control)
   - [Focus](#focus)
+  - [Focus pull](#focus-pull)
+  - [Focus positions](#focus-positions)
   - [Presets](#presets)
   - [SD card](#sd-card)
 - [FAQ](#faq)
@@ -49,12 +51,16 @@ https://github.com/user-attachments/assets/88d4dcbc-c6db-4bb7-9184-9daaf6ef9eb5
 
 - **Next to your external monitor.** An external monitor is brighter than the camera's built-in screen, so that is where you look. MagicPilot mounts right beside it, so the settings are in your line of sight.
 - **When the camera is out of reach.** With the camera against a wall or mounted very high, such as on a crane, the remote changes settings and starts or stops recording from wherever you stand.
+- **When the camera is on a gimbal.** Touching the lens or focus ring can disturb a balanced, moving shot. MagicPilot lets you adjust focus remotely without touching the camera.
+- **With focus-by-wire lenses.** Electronic focus rings can be difficult to operate consistently by hand. On compatible lenses, saved focus positions and timed pulls provide a repeatable way to set and move focus.
 
 ### ✨ Everything You need at a Glance
 
 | | Feature | What it does |
 |---|---|---|
 | 🔭 | **Focus Control** | **NEAR → FAR** slider, 1% steps and one-shot autofocus. |
+| 🎯 | **Focus Pull Macro** | Record a timed focus move between start and end positions, with pause, resume and progress. |
+| 📌 | **Focus Positions** | Save and immediately recall three focus positions. |
 | 📊 | **Live Camera Readout** | ISO, shutter angle, FPS, white balance, tint, iris, timecode, battery and card status. |
 | 🎛️ | **Parameter Control** | Tap a value, then use − / + to change it on the camera. |
 | 🎥 | **Record Control** | Start and stop recording with one button. |
@@ -70,7 +76,7 @@ MagicPilot is designed around a small amount of readily available hardware:
 
 - **M5Stack Core2, CoreS3, or CoreS3-SE** — touchscreen remote and ESP32 platform
 - **BMPCC6K** — with Bluetooth enabled
-- **microSD card** — optional; required for preset storage.
+- **microSD card** — optional; required to save camera presets, focus pull settings and focus positions.
 
 That's it.
 
@@ -118,7 +124,7 @@ CoreS3-SE uses the same CoreS3 PlatformIO environment and is detected as a CoreS
 | Blackmagic Pocket Cinema Camera 6K | 🟢 Supported |
 | Pocket Cinema Camera 6K G2 | 🟡 Not Tested |
 | Pocket Cinema Camera 6K Pro | 🟡 Not Tested |
-| Pocket Cinema Camera 4K | 🟡 Not Tested |
+| Pocket Cinema Camera 4K | 🟢 Tested |
 
 ## Using the remote
 
@@ -195,10 +201,10 @@ Without a card the remote still works, but camera presets and focus settings are
 Flash MagicPilot onto an M5Stack Core2, CoreS3, or CoreS3-SE and switch on Bluetooth on the camera. The remote connects directly over Bluetooth LE, so you don't need a phone, tablet, Wi-Fi network, or the Blackmagic Camera app.
 
 **Can MagicPilot pull focus on a BMPCC6K?**
-Yes. The focus page has a NEAR → FAR slider, − / + buttons in 1% steps, and a one-shot autofocus (AF) button. It works with lenses the camera can drive electronically.
+Yes. Manual focus has a NEAR → FAR slider, − / + buttons in 1% steps and one-shot autofocus (AF). The focus pull macro records a timed move between two focus positions. Both features work with lenses the camera can drive electronically.
 
 **Which Blackmagic cameras are supported?**
-The Blackmagic Pocket Cinema Camera 6K is tested. Other cameras that implement the Blackmagic Camera Control Bluetooth protocol, such as the BMPCC 6K G2, 6K Pro and 4K, may work but haven't been tested yet. See [Camera compatibility](#-camera-compatibility).
+The Blackmagic Pocket Cinema Camera 6K and Pocket Cinema Camera 4K have been tested. The 6K G2 and 6K Pro may work but have not been tested yet. See [Camera compatibility](#-camera-compatibility).
 
 **What hardware do I need?**
 An M5Stack Core2, CoreS3, or CoreS3-SE (ESP32 touchscreen modules) and optionally a microSD card for presets. See [Hardware](#-hardware).
