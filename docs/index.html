@@ -51,6 +51,8 @@
         "author": { "@type": "Organization", "name": "KenFilms", "url": "https://github.com/KenFilms" },
         "featureList": [
           "Focus control with NEAR to FAR slider and one-shot autofocus",
+          "Timed focus pull macro with start and end positions, pause and progress",
+          "Three saved focus positions with immediate camera updates",
           "Live readout of ISO, shutter angle, FPS, white balance, tint, iris and timecode",
           "Change camera settings with - / + buttons",
           "Start and stop recording",
@@ -78,17 +80,17 @@
           {
             "@type": "Question",
             "name": "Can MagicPilot pull focus on a BMPCC6K?",
-            "acceptedAnswer": { "@type": "Answer", "text": "Yes. The focus page has a NEAR to FAR slider, - / + buttons in 1% steps and a one-shot autofocus button. It works with lenses the camera can drive electronically." }
+            "acceptedAnswer": { "@type": "Answer", "text": "Yes. Manual focus has a NEAR to FAR slider, - / + buttons in 1% steps and one-shot autofocus. The focus pull macro records a timed move between two focus positions. These features work with lenses the camera can drive electronically." }
           },
           {
             "@type": "Question",
             "name": "Which Blackmagic cameras are supported?",
-            "acceptedAnswer": { "@type": "Answer", "text": "The Blackmagic Pocket Cinema Camera 6K is tested. Other cameras that implement the Blackmagic Camera Control Bluetooth protocol, such as the BMPCC 6K G2, 6K Pro and 4K, may work but haven't been tested yet." }
+            "acceptedAnswer": { "@type": "Answer", "text": "The Blackmagic Pocket Cinema Camera 6K and Pocket Cinema Camera 4K have been tested. The 6K G2 and 6K Pro may work but have not been tested yet." }
           },
           {
             "@type": "Question",
             "name": "What hardware do I need?",
-            "acceptedAnswer": { "@type": "Answer", "text": "An M5Stack Core2, CoreS3 or CoreS3-SE ESP32 touchscreen module, and optionally a microSD card for presets." }
+            "acceptedAnswer": { "@type": "Answer", "text": "An M5Stack Core2, CoreS3 or CoreS3-SE ESP32 touchscreen module. A microSD card is optional and needed to save camera presets and focus settings." }
           },
           {
             "@type": "Question",
@@ -146,11 +148,15 @@
       <h2>Why use a Bluetooth remote for your Blackmagic camera?</h2>
       <p><strong>Next to your external monitor.</strong> An external monitor is brighter than the camera's built-in screen, so that is where you look. MagicPilot mounts right beside it, so the settings are in your line of sight.</p>
       <p><strong>When the camera is out of reach.</strong> With the camera against a wall or mounted very high, such as on a crane or jib, the remote changes settings and starts or stops recording from wherever you stand.</p>
+      <p><strong>When the camera is on a gimbal.</strong> Touching the lens or focus ring can disturb a balanced, moving shot. MagicPilot lets you adjust focus remotely without touching the camera.</p>
+      <p><strong>With focus-by-wire lenses.</strong> Electronic focus rings can be difficult to operate consistently by hand. On compatible lenses, saved focus positions and timed pulls provide a repeatable way to set and move focus.</p>
     </section>
 
     <section id="features">
       <h2>Features</h2>
       <div class="grid">
+        <div class="card"><h3>Focus pull macro</h3><p>Record a timed focus move between start and end positions, with pause, resume and progress.</p></div>
+        <div class="card"><h3>Focus positions</h3><p>Save and immediately recall three focus positions.</p></div>
         <div class="card"><h3>🔭 Wireless focus control</h3><p>NEAR → FAR slider, 1% steps and one-shot autofocus.</p></div>
         <div class="card"><h3>📊 Live camera readout</h3><p>ISO, shutter angle, FPS, white balance, tint, iris, timecode, battery and card status.</p></div>
         <div class="card"><h3>🎛️ Exposure control</h3><p>Tap a value, then use − / + to change it on the camera.</p></div>
@@ -158,6 +164,19 @@
         <div class="card"><h3>💾 Camera presets</h3><p>Save and recall two complete camera configurations on microSD.</p></div>
         <div class="card"><h3>☀️ Automatic brightness</h3><p>The CoreS3 adapts its backlight to ambient light.</p></div>
       </div>
+    </section>
+
+    <section id="focus">
+      <h2>Focus control</h2>
+      <p>From the main screen, tap <strong>MENU</strong>, then choose <strong>MANUAL FOCUS</strong>. Drag the slider from NEAR to FAR to set focus. The - / + buttons adjust in 1% steps and repeat while held. Use the slider once if the camera has not reported its current focus position yet. <strong>AF</strong> triggers one-shot autofocus.</p>
+      <p>Focus control works with lenses the camera can drive electronically.</p>
+
+      <h3>Focus pull macro</h3>
+      <p>From <strong>MENU</strong>, choose <strong>FOCUS PULL</strong>. Select the <strong>START</strong>, <strong>END</strong> or <strong>PULL TIME</strong> box and adjust it with - / +. Focus values change in 1% steps; pull time changes in one-second steps. <strong>TAKE CURRENT FOCUS</strong> copies the camera's current focus into the selected start or end value. <strong>REVERSE</strong> swaps the endpoints.</p>
+      <p>Tap the record pad to set start focus and begin recording. After a two-second hold, the macro moves focus over the configured pull time, holds the end focus for two seconds, then stops recording. While running, the pad pauses or resumes; <strong>STOP</strong> ends the macro early. The progress bar tracks the focus move.</p>
+
+      <h3>Focus positions</h3>
+      <p>From <strong>MENU</strong>, choose <strong>FOCUS PRESETS</strong>. Tap one of the three numbered positions to select and apply it to the camera. Use - / + to adjust the selected position in 1% steps. The page also has a record control.</p>
     </section>
 
     <section id="video">
@@ -175,6 +194,22 @@
              alt="MagicPilot Remote presets screen with save, load and clear buttons for two Blackmagic camera presets">
         <figcaption>Two preset slots store ISO, shutter, FPS, white balance, tint and iris.</figcaption>
       </figure>
+      <ul>
+        <li><strong>SAVE</strong> stores the current camera settings in that slot.</li>
+        <li><strong>LOAD</strong> sends the saved settings to the camera.</li>
+        <li><strong>CLEAR</strong> erases a slot after a second confirmation tap.</li>
+      </ul>
+      <p>Camera presets are stored on the microSD card and remain available after power-off.</p>
+    </section>
+
+    <section id="storage">
+      <h2>microSD storage</h2>
+      <p>The card is optional. Without it the remote still works, but saved camera presets and focus settings do not persist after power-off.</p>
+      <ul>
+        <li><code>/presets/</code>: camera preset files.</li>
+        <li><code>/focus_pull.cfg</code>: focus pull start, end and duration settings.</li>
+        <li><code>/focus_presets.cfg</code>: the three saved focus positions.</li>
+      </ul>
     </section>
 
     <section id="hardware">
@@ -182,7 +217,7 @@
       <ul>
         <li><strong>M5Stack Core2, CoreS3 or CoreS3-SE</strong>: ESP32 touchscreen module that runs the firmware</li>
         <li><strong>Blackmagic Pocket Cinema Camera 6K</strong> with Bluetooth enabled</li>
-        <li><strong>microSD card</strong> (optional, for presets)</li>
+        <li><strong>microSD card</strong> (optional; needed to save camera presets, focus pull settings and focus positions)</li>
       </ul>
       <p>Build and flash with the <a href="https://github.com/KenFilms/MagicPilot_Remote#arduino-ide">Arduino IDE</a> or <a href="https://github.com/KenFilms/MagicPilot_Remote#platformio">PlatformIO</a>.</p>
     </section>
@@ -195,7 +230,7 @@
           <tr><td>Blackmagic Pocket Cinema Camera 6K (BMPCC6K)</td><td>🟢 Supported</td></tr>
           <tr><td>Blackmagic Pocket Cinema Camera 6K G2</td><td>🟡 Not tested</td></tr>
           <tr><td>Blackmagic Pocket Cinema Camera 6K Pro</td><td>🟡 Not tested</td></tr>
-          <tr><td>Blackmagic Pocket Cinema Camera 4K (BMPCC4K)</td><td>🟡 Not tested</td></tr>
+          <tr><td>Blackmagic Pocket Cinema Camera 4K (BMPCC4K)</td><td>&#x1F7E2; Tested</td></tr>
         </tbody>
       </table>
     </section>
@@ -208,15 +243,15 @@
       </details>
       <details>
         <summary>Can MagicPilot pull focus on a BMPCC6K?</summary>
-        <p>Yes. The focus page has a NEAR → FAR slider, − / + buttons in 1% steps and a one-shot autofocus button. It works with lenses the camera can drive electronically.</p>
+        <p>Yes. Manual focus has a NEAR-to-FAR slider, - / + buttons in 1% steps and one-shot autofocus. The focus pull macro records a timed move between two focus positions. These features work with lenses the camera can drive electronically.</p>
       </details>
       <details>
         <summary>Which Blackmagic cameras are supported?</summary>
-        <p>The Blackmagic Pocket Cinema Camera 6K is tested. Other cameras that implement the Blackmagic Camera Control Bluetooth protocol, such as the BMPCC 6K G2, 6K Pro and 4K, may work but haven't been tested yet.</p>
+        <p>The Blackmagic Pocket Cinema Camera 6K and Pocket Cinema Camera 4K have been tested. The 6K G2 and 6K Pro may work but have not been tested yet.</p>
       </details>
       <details>
         <summary>What hardware do I need?</summary>
-        <p>An M5Stack Core2, CoreS3 or CoreS3-SE ESP32 touchscreen module, and optionally a microSD card for presets.</p>
+        <p>An M5Stack Core2, CoreS3 or CoreS3-SE ESP32 touchscreen module. A microSD card is optional and needed to save camera presets and focus settings.</p>
       </details>
       <details>
         <summary>Is MagicPilot free?</summary>
