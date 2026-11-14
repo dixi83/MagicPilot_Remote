@@ -5,6 +5,7 @@
 #include "config.h"
 #include "globals.h"
 #include "ble_protocol.h"
+#include "focus_fader.h"
 #include "ui_main_screen.h"
 #include "ui_presets_screen.h"  // openScreen(SCREEN_MAIN)
 
@@ -31,6 +32,8 @@ static M5Canvas focusLabelCanvas(&M5.Lcd);
 static bool focusLabelCanvasReady = false;
 static char drawnFocusTimecode[20] = {};
 static uint16_t drawnFocusTimecodeColor = BLACK;
+static char drawnFocusPercentText[8] = {};
+static int16_t drawnFocusSliderPosition = -2;  // -2 means the track needs a full repaint
 
 static void drawRotatedFocusLabel(const char* label, int centerX, int centerY) {
     // Draw labels in a small reusable sprite so rotating them doesn't repaint the page.
@@ -87,23 +90,48 @@ static void drawFocusTimecode() {
     drawFocusTimecodeBadge();
 }
 
-// Redraws only the percentage and slider, so dragging doesn't flicker.
+// Repaints the slider on entry, then only the strip crossed by the moving marker.
+static void drawFocusSlider(int16_t position) {
+    const bool fullRedraw = drawnFocusSliderPosition == -2 || position < 0 || drawnFocusSliderPosition < 0;
+    if (fullRedraw) {
+        M5.Lcd.fillRect(FOCUS_SLIDER.x - 4, FOCUS_SLIDER.y - 2, FOCUS_SLIDER.w + 8, FOCUS_SLIDER.h + 4, BLACK);
+        M5.Lcd.drawRect(FOCUS_SLIDER.x, FOCUS_SLIDER.y, FOCUS_SLIDER.w, FOCUS_SLIDER.h, GREY);
+        if (position >= 0) {
+            if (position > 0) M5.Lcd.fillRect(FOCUS_SLIDER.x + 1, FOCUS_SLIDER.y + 1, position, FOCUS_SLIDER.h - 2, UI_CONNECT);
+            M5.Lcd.fillRect(FOCUS_SLIDER.x + position - 2, FOCUS_SLIDER.y - 2, 5, FOCUS_SLIDER.h + 4, WHITE);
+        }
+    } else if (position != drawnFocusSliderPosition) {
+        // Restore only the union of the old/new marker and the track area between them.
+        const int left = FOCUS_SLIDER.x + min((int)drawnFocusSliderPosition, (int)position) - 2;
+        const int right = FOCUS_SLIDER.x + max((int)drawnFocusSliderPosition, (int)position) + 3;
+        M5.Lcd.fillRect(left, FOCUS_SLIDER.y - 2, right - left, FOCUS_SLIDER.h + 4, BLACK);
+        const int fillLeft = max(left, FOCUS_SLIDER.x + 1);
+        const int fillRight = min(right, FOCUS_SLIDER.x + 1 + (int)position);
+        if (fillRight > fillLeft) {
+            M5.Lcd.fillRect(fillLeft, FOCUS_SLIDER.y + 1, fillRight - fillLeft, FOCUS_SLIDER.h - 2, UI_CONNECT);
+        }
+        M5.Lcd.drawRect(FOCUS_SLIDER.x, FOCUS_SLIDER.y, FOCUS_SLIDER.w, FOCUS_SLIDER.h, GREY);
+        M5.Lcd.fillRect(FOCUS_SLIDER.x + position - 2, FOCUS_SLIDER.y - 2, 5, FOCUS_SLIDER.h + 4, WHITE);
+    }
+    drawnFocusSliderPosition = position;
+}
+
+// Redraws the percentage only when its displayed value changes and updates the slider incrementally.
 static void drawFocusDynamic() {
     char text[8] = "--";
     if (cameraFocus >= 0) snprintf(text, sizeof(text), "%d%%", ((int)cameraFocus * 100 + FOCUS_MAX / 2) / FOCUS_MAX);
-    M5.Lcd.setTextFont(1);
-    M5.Lcd.setTextColor(WHITE, BLACK);
-    M5.Lcd.setTextDatum(MC_DATUM);
-    M5.Lcd.setTextPadding(100);
-    M5.Lcd.drawString(text, FOCUS_PERCENT_X, FOCUS_PERCENT_Y, 4);
-    M5.Lcd.setTextPadding(0);
+    if (strcmp(text, drawnFocusPercentText) != 0) {
+        M5.Lcd.setTextFont(1);
+        M5.Lcd.setTextColor(WHITE, BLACK);
+        M5.Lcd.setTextDatum(MC_DATUM);
+        M5.Lcd.setTextPadding(100);
+        M5.Lcd.drawString(text, FOCUS_PERCENT_X, FOCUS_PERCENT_Y, 4);
+        M5.Lcd.setTextPadding(0);
+        snprintf(drawnFocusPercentText, sizeof(drawnFocusPercentText), "%s", text);
+    }
 
-    M5.Lcd.fillRect(FOCUS_SLIDER.x - 4, FOCUS_SLIDER.y - 2, FOCUS_SLIDER.w + 8, FOCUS_SLIDER.h + 4, BLACK);
-    M5.Lcd.drawRect(FOCUS_SLIDER.x, FOCUS_SLIDER.y, FOCUS_SLIDER.w, FOCUS_SLIDER.h, GREY);
-    if (cameraFocus < 0) return;
-    const int position = (int)cameraFocus * (FOCUS_SLIDER.w - 1) / FOCUS_MAX;
-    if (position > 0) M5.Lcd.fillRect(FOCUS_SLIDER.x + 1, FOCUS_SLIDER.y + 1, position, FOCUS_SLIDER.h - 2, UI_CONNECT);
-    M5.Lcd.fillRect(FOCUS_SLIDER.x + position - 2, FOCUS_SLIDER.y - 2, 5, FOCUS_SLIDER.h + 4, WHITE);
+    const int16_t position = cameraFocus < 0 ? -1 : (int16_t)((int)cameraFocus * (FOCUS_SLIDER.w - 1) / FOCUS_MAX);
+    drawFocusSlider(position);
 }
 
 // Draws the manual focus page: slider, - / AF / + keys and the BACK button.
@@ -111,6 +139,8 @@ static void drawFocusScreen() {
     drawSubHeader("FOCUS");
     drawRotatedFocusLabel("NEAR", FOCUS_NEAR_LABEL_X, FOCUS_LABEL_Y);
     drawRotatedFocusLabel("FAR", FOCUS_FAR_LABEL_X, FOCUS_LABEL_Y);
+    drawnFocusPercentText[0] = '\0';
+    drawnFocusSliderPosition = -2;
     drawFocusDynamic();
     drawnFocusTimecode[0] = '\0';
     drawnFocusTimecodeColor = BLACK;
@@ -156,9 +186,11 @@ static void handleFocusTouch(int x, int y) {
     }
     if (key == FOCUS_KEY_AF) {
         // One-shot autofocus; the camera reports the new focus afterwards.
+        focusFaderReleaseControl();
         setStatus(writeCameraPacket(AUTOFOCUS_PACKET, sizeof(AUTOFOCUS_PACKET)) ? "Autofocus triggered" : "Autofocus failed");
         return;
     }
+    focusFaderReleaseControl();
     if (onSlider) {
         sendFocus((x - FOCUS_SLIDER.x) * FOCUS_MAX / FOCUS_SLIDER.w);
     } else {

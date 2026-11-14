@@ -58,7 +58,7 @@ https://github.com/user-attachments/assets/88d4dcbc-c6db-4bb7-9184-9daaf6ef9eb5
 
 | | Feature | What it does |
 |---|---|---|
-| 🔭 | **Focus Control** | **NEAR → FAR** slider, 1% steps and one-shot autofocus. |
+| 🔭 | **Focus Control** | **NEAR → FAR** slider, 1% steps, one-shot autofocus and optional Core2 Unit Fader. |
 | 🎯 | **Focus Pull Macro** | Record a timed focus move between start and end positions, with pause, resume and progress. |
 | 📌 | **Focus Positions** | Save and immediately recall three focus positions. |
 | 📊 | **Live Camera Readout** | ISO, shutter angle, FPS, white balance, tint, iris, timecode, battery and card status. |
@@ -75,6 +75,7 @@ https://github.com/user-attachments/assets/88d4dcbc-c6db-4bb7-9184-9daaf6ef9eb5
 MagicPilot is designed around a small amount of readily available hardware:
 
 - **M5Stack Core2, CoreS3, or CoreS3-SE** — touchscreen remote and ESP32 platform
+- **M5Stack Unit Fader (optional, Core2 only)** — connects to PORT.A for physical focus control.
 - **BMPCC6K** — with Bluetooth enabled
 - **microSD card** — optional; required to save camera presets, focus pull settings and focus positions.
 
@@ -161,6 +162,7 @@ Tap **MENU** on the main screen, then choose **MANUAL FOCUS**.
 - **Slider**: drag from NEAR to FAR to set focus directly. The current position shows as a percentage.
 - **- / +**: steps of exactly 1%, repeating while held. They work once the camera has reported its focus position; until then, move the slider once.
 - **AF**: triggers the camera's one-shot autofocus.
+- **Unit Fader (Core2 PORT.A)**: connect the optional M5Stack Unit Fader to PORT.A; its white analog signal uses GPIO33. Its direction is set to match the manual focus controls. The fader takes control when it passes the current camera focus, preventing a sudden jump when opening the page. Touch controls remain available.
 
 Focus changes only reach lenses the camera can drive.
 

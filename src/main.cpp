@@ -4,7 +4,7 @@
  * Author: Ken Friedl https://github.com/KenFilms
  * First Version:   2026-10-04
  * 
- * Current version: 1.0.0
+ * Current version: 1.1.0
  *
  * Touchscreen remote for Blackmagic cameras (tested with the Pocket Cinema Camera 6K), running on an
  * M5Stack Core2. It talks to the camera over Bluetooth LE with the Blackmagic Camera Control protocol,
@@ -53,6 +53,7 @@
 #include "focus_macro_storage.h"
 static void drawFocusMacroScreen();
 #include "ui_focus_macro.h"
+#include "focus_fader.h"
 #include "ui_focus_screen.h"
 #include "ui_focus_menu.h"
 #include "touch_router.h"
@@ -81,6 +82,7 @@ void setup() {
     M5.Lcd.setTextFont(1);
     M5.Lcd.setTextSize(1);
     Serial.begin(115200);
+    initializeFocusFader();
     initializeAmbientBrightness();
     sdReady = mountSd();
     // Load saved focus settings after mounting the card; defaults remain in effect if no file exists.
@@ -132,6 +134,7 @@ static void handleTouchInput() {
 void loop() {
     M5.update();
     updateAmbientBrightness();
+    updateFocusFader();
     updateDirtyDisplay();
     updateRemoteBattery();
     advancePresetLoad();

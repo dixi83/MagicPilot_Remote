@@ -244,8 +244,11 @@ static void applyRecordingFormat(const uint8_t* data, size_t) {
 static void applyIris(const uint8_t* data, size_t) { cameraIris = readInt16(data); valuesDirty = true; }
 
 static void applyFocus(const uint8_t* data, size_t) {
-    cameraFocus = constrain(readInt16(data), 0, FOCUS_MAX);
-    focusDirty = true;
+    const int16_t reportedFocus = constrain(readInt16(data), 0, FOCUS_MAX);
+    if (reportedFocus != cameraFocus) {
+        cameraFocus = reportedFocus;
+        focusDirty = true;
+    }
 }
 
 static void applyTransport(const uint8_t* data, size_t valueLength) {
